@@ -1,8 +1,8 @@
 import { PlotterColumnsItem } from "./columns-item/columns-item.component";
 import "./plotter-columns.css";
 
-export function PlotterColumns({ props }) {
-  const columns = ["Product", "Cost"];
+export function PlotterColumns({ cols = [] }) {
+    console.log(cols);
   return (
     <div className="row">
       <div className="col">
@@ -28,8 +28,12 @@ export function PlotterColumns({ props }) {
             >
               <div className="accordion-body">
                 <ul className="list-group">
-                  {columns.map((col, indx) => (
-                    <PlotterColumnsItem value={col} key={indx} />
+                  {cols.map((col, indx) => (
+                    <PlotterColumnsItem
+                      value={col.name}
+                      category={col.function}
+                      key={indx}
+                    />
                   ))}
                 </ul>
               </div>

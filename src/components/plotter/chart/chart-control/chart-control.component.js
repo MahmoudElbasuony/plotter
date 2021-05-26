@@ -1,38 +1,47 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDrop } from "react-dnd";
 
-export function PlotterChartControl() {
+export function PlotterChartControl({ onMeasureChanged, onDimensionChanged }) {
   const [measures, setMeasures] = useState([]);
   const [dimension, setDimension] = useState("");
+  const onMeasuresChange = () => {
+    if (onMeasureChanged) onMeasureChanged(measures);
+  };
+
+
+  useEffect(()=>{
+    onDimensionChanged(dimension)
+  }, [dimension]);
+
+  useEffect(() => {
+    onMeasuresChange();
+  }, [measures]);
 
   const onDimensionDrop = (monitor) => {
-    debugger;
     const droppedDimension = (monitor || {}).value;
     if (!droppedDimension || measures.includes(droppedDimension)) return;
     setDimension(droppedDimension);
   };
-
   const onMeasureDrop = (monitor) => {
     const droppedMeasure = (monitor || {}).value;
     if (droppedMeasure && !measures.includes(droppedMeasure)) {
-      setMeasures((prevMeasures) => {
-        if (prevMeasures.includes(droppedMeasure) ||droppedMeasure === dimension)
-             return prevMeasures;
-        else return [...prevMeasures, droppedMeasure];
-      });
+      setMeasures((prevMeasures) =>
+        prevMeasures.includes(droppedMeasure) || droppedMeasure === dimension
+          ? prevMeasures
+          : [...prevMeasures, droppedMeasure]
+      );
     }
   };
-  
-  const [, drop_dimension] = useDrop(() => ({ accept: "Column", drop: onDimensionDrop }),[dimension, measures]);
 
-  const [, drop_measure] = useDrop(() => ({accept: "Column",drop: onMeasureDrop }),[dimension, measures]);
+  const [, drop_dimension] = useDrop(
+    () => ({ accept: "dimension", drop: onDimensionDrop }),
+    [dimension, measures]
+  );
 
-  const onMeasuresChange = () => {
-    console.log(measures);
-  };
-  const onDimensionChange = () => {
-    console.log(dimension);
-  };
+  const [, drop_measure] = useDrop(
+    () => ({ accept: "measure", drop: onMeasureDrop }),
+    [dimension, measures]
+  );
 
   return (
     <div className="card">
@@ -43,12 +52,11 @@ export function PlotterChartControl() {
             <div className="input-group mb-3" ref={drop_dimension}>
               <input
                 type="text"
-                readOnly
                 className="form-control"
                 placeholder="Dimension"
                 id="dimensionInput"
                 value={dimension}
-                onChange={() => onDimensionChange()}
+                readOnly
               />
               <button
                 className="btn btn-outline-secondary"
@@ -72,7 +80,6 @@ export function PlotterChartControl() {
                 id="measuresInput"
                 readOnly
                 value={(measures || []).join(" , ")}
-                onChange={() => onMeasuresChange()}
               />
               <button
                 className="btn btn-outline-secondary"
